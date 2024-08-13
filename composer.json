@@ -1,0 +1,22 @@
+{
+    "name": "ma/phpquick",
+    "description": "''",
+    "type": "library",
+    "require": {
+        "psr/container": "^2.0",
+        "firebase/php-jwt": "^6.10"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "MA\\PHPQUICK\\": ""
+        }
+    },
+    "authors": [
+        {
+            "name": "moehakram",
+            "email": "muh.akram1422@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}
