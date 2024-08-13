@@ -1,6 +1,6 @@
 {
     "name": "moehakram/phpquick",
-    "description": "''",
+    "description": "Library PHP untuk framework webphp-oop",
     "version": "1.1.0",
     "type": "library",
     "require": {
@@ -10,8 +10,7 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "php": ">=8.1",
-            "MA\\PHPQUICK\\": ""
+            "MA\\PHPQUICK\\": "src/"
         },
         "files": [
             "helpers.php"
