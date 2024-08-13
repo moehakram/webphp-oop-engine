@@ -11,7 +11,14 @@
     "autoload": {
         "psr-4": {
             "MA\\PHPQUICK\\": ""
-        }
+        },
+        "files": [
+            "helpers/logging_helpers.php",
+            "helpers/app_helpers.php",
+            "helpers/string_helpers.php",
+            "helpers/view_helpers.php",
+            "helpers/base_helpers.php"
+        ]
     },
     "authors": [
         {
