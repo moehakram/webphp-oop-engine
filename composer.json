@@ -1,5 +1,5 @@
 {
-    "name": "ma/phpquick",
+    "name": "moehakram/phpquick",
     "description": "''",
     "type": "library",
     "require": {
@@ -18,5 +18,11 @@
             "email": "muh.akram1422@gmail.com"
         }
     ],
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/moehakram/webphp-oop-engine"
+        }
+    ]
 }
