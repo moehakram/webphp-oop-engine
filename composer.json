@@ -11,12 +11,15 @@
     "autoload": {
         "psr-4": {
             "MA\\PHPQUICK\\": ""
-        }
+        },
+        "files": [
+            "helpers.php"
+        ]
     },
     "authors": [
         {
             "name": "moehakram",
-            "email": "muh.akram1422@gmail.com"
+            "email": "moeh.akramgmail.com"
         }
     ],
     "minimum-stability": "stable",
