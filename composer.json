@@ -1,7 +1,7 @@
 {
     "name": "moehakram/phpquick",
     "description": "Library PHP untuk framework webphp-oop",
-    "version": "1.1.0",
+    "version": "1.0.0",
     "type": "library",
     "require": {
         "psr/container": "^2.0",
@@ -15,7 +15,7 @@
     },
     "authors": [
         {
-            "name": "moehakram",
+            "name": "Muhammad Akram",
             "email": "moeh.akram@gmail.com"
         }
     ],
