@@ -56,11 +56,8 @@ class Bootstrap
      */
     private function initializeConfig(App $app): void
     {
-        $config = new Config(require base_path('config/config.php'));
-        $app->instance('config', $config);
-        $app->instance(Config::class, $config);
         if($this->initializeConfig) {
-            ($this->initializeConfig)($config);
+            ($this->initializeConfig)($app->get('config'));
         }
     }
 
