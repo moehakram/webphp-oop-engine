@@ -18,9 +18,12 @@ class Application extends Container
 {
     public function __construct(
         private readonly IRequest $request,
-        private readonly Router $router
+        private readonly Router $router,
+        private readonly Config $config
     ) {
         static::$instance = $this;
+        $this->instance('config', $config);
+        $this->instance(Config::class, $config);
         $this->instance(Request::class, $request);
         $this->instance(IRequest::class, $request);
     }
