@@ -1,9 +1,9 @@
 {
     "name": "moehakram/phpquick",
     "description": "Library PHP untuk framework webphp-oop",
-    "version": "1.0.0",
     "type": "library",
     "require": {
+        "php": ">=8.1",
         "psr/container": "^2.0",
         "firebase/php-jwt": "^6.10"
     },
@@ -19,7 +19,6 @@
             "email": "moeh.akram@gmail.com"
         }
     ],
-    "minimum-stability": "stable",
     "repositories": [
         {
             "type": "vcs",
