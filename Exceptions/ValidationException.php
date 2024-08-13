@@ -23,7 +23,7 @@ class ValidationException extends \Exception
         return $this->errors;
     }
 
-    public function status($status)
+    public function code(int $status)
     {
         $this->code = $status;
 
