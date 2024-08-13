@@ -1,6 +1,7 @@
 {
     "name": "moehakram/phpquick",
     "description": "''",
+    "version": "1.0.0",
     "type": "library",
     "require": {
         "psr/container": "^2.0",
