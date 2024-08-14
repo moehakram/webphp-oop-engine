@@ -159,4 +159,24 @@ trait MethodsValidation {
 
         return is_numeric($this->get($field));
     }
+
+
+    private function is_alpha(string $field): bool
+    {
+        if (!$this->has($field)) {
+            return true;
+        }
+
+        $words = explode(' ', trim($this->get($field)));
+        $allWordsAreAlpha = true;
+        
+        foreach ($words as $word) {
+            if (!ctype_alpha($word)) {
+                $allWordsAreAlpha = false;
+                break;
+            }
+        }
+
+        return $allWordsAreAlpha;
+    }
 }

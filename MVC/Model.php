@@ -35,44 +35,5 @@ abstract class Model extends Validator
         if (property_exists($this, $key)) {
             $this->$key = $value;
         }
-    }
-
-    final public function sanitize(): array {
-        $data = [];
-        foreach ($this->sanitizationRule as $field => $fieldType) {
-            $data[$field] = $this->sanitizeField($field, $fieldType);
-        }
-        return $data;
-    }
-    
-    private function sanitizeField(string $field, string $fieldType) {
-        if (!$this->has($field)) {
-            return null;
-        }
-    
-        $filter = $this->getFilter($fieldType);
-        $value = $this->get($field);
-    
-        $result = is_array($filter) ? $this->filterArray($value, $filter) : filter_var($value, $filter);
-    
-        if ($result !== false) {
-            $result = $this->trimValue($result);
-            $this->set($field, $result);
-            return $result;
-        }
-    
-        return $value;
-    }
-    
-    private function getFilter(string $fieldType) {
-        return $this->filterKey()[$fieldType] ?? FILTER_SANITIZE_SPECIAL_CHARS;
-    }
-    
-    private function filterArray($value, array $filter) {
-        if (isset($filter['flags'])) {
-            return filter_var($value, $filter['filter'], ['flags' => $filter['flags']]);
-        }
-        return filter_var($value, $filter['filter'], ['options' => $filter['options']]);
-    }
-    
+    }   
 }

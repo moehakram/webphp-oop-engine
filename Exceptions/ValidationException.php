@@ -42,4 +42,10 @@ class ValidationException extends \Exception
 
         return $this;
     }
+    
+    public function setMessage(string $message)
+    {
+        $this->message = $message;
+        return $this;
+    }
 }
