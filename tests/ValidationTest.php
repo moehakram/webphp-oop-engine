@@ -4,10 +4,10 @@ namespace Tests;
 
 use MA\PHPQUICK\Collection;
 use PHPUnit\Framework\TestCase;
-use MA\PHPQUICK\Validation\Validator;
+use MA\PHPQUICK\Validation\Validation;
 use MA\PHPQUICK\Exceptions\ValidationException;
 
-final class ValidatorTest extends TestCase
+final class ValidationTest extends TestCase
 {
     public function testValidationPassesWithValidData(): void
     {
@@ -25,7 +25,7 @@ final class ValidatorTest extends TestCase
             'age' => 'required|numeric'
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
         $validatedData = $validator->validate();
         $this->assertEquals($data, $validatedData->getAll());
     }
@@ -40,7 +40,7 @@ final class ValidatorTest extends TestCase
             'email' => 'email|required'
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
 
         $this->expectException(ValidationException::class);
 
@@ -68,7 +68,7 @@ final class ValidatorTest extends TestCase
             'phone' => 'required|numeric'
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
 
         $this->expectException(ValidationException::class);
 
@@ -106,7 +106,7 @@ final class ValidatorTest extends TestCase
             ]
         ];
 
-        $validator = new Validator($data, $rules, $messages);
+        $validator = new Validation($data, $rules, $messages);
 
         $this->expectException(ValidationException::class);
 
@@ -133,7 +133,7 @@ final class ValidatorTest extends TestCase
             'name' => 'required'
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
 
         $this->assertTrue($validator->has('name'));
     }
@@ -148,7 +148,7 @@ final class ValidatorTest extends TestCase
             'name' => 'required'
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
 
         $this->assertFalse($validator->has('email'));
     }
@@ -163,7 +163,7 @@ final class ValidatorTest extends TestCase
             'name' => 'required'
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
 
         $this->assertEquals('default', $validator->get('email', 'default'));
     }
@@ -178,7 +178,7 @@ final class ValidatorTest extends TestCase
             'name' => 'required'
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
         $validator->set('name', 'muh akram');
 
         $this->assertEquals('muh akram', $validator->get('name'));
@@ -196,7 +196,7 @@ final class ValidatorTest extends TestCase
             'password' => ['required', 'secure'],
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
 
         try {
             $result = $validator->validate();
@@ -219,7 +219,7 @@ final class ValidatorTest extends TestCase
             'password' => ['required', 'secure'],
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
 
         $this->expectException(ValidationException::class);
         $validator->validate();
@@ -235,7 +235,7 @@ final class ValidatorTest extends TestCase
             'name' => 'alfhabet'
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
         try {
             $result = $validator->validate();
             $this->assertInstanceOf(Collection::class, $result);
@@ -256,7 +256,7 @@ final class ValidatorTest extends TestCase
             'name' => 'alpha'
         ];
 
-        $validator = new Validator($data, $rules);
+        $validator = new Validation($data, $rules);
         $this->expectException(ValidationException::class);
         try {
             $validator->validate();

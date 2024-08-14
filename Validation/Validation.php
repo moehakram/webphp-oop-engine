@@ -5,7 +5,8 @@ namespace MA\PHPQUICK\Validation;
 use MA\PHPQUICK\Collection;
 use MA\PHPQUICK\Exceptions\ValidationException;
 
-class Validator{
+class Validation
+{
     use MethodsValidation;
 
     const REQUIRED = 'required';
