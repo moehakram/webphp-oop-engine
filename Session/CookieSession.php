@@ -1,9 +1,9 @@
 <?php
 namespace MA\PHPQUICK\Session;
 
-use MA\PHPQUICK\Token;
 use MA\PHPQUICK\Collection;
 use MA\PHPQUICK\Http\Responses\Cookie;
+use MA\PHPQUICK\Traits\Token;
 
 class CookieSession extends Collection
 {

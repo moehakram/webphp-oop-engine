@@ -3,9 +3,7 @@ declare(strict_types = 1);
 namespace MA\PHPQUICK\Validation;
 
 use MA\PHPQUICK\Collection;
-use MA\PHPQUICK\Contracts\ValidationRule;
 use MA\PHPQUICK\Exceptions\ValidationException;
-use MA\PHPQUICK\Validation\Rules\RequiredRule;
 
 class Validator{
     use MethodsValidation;

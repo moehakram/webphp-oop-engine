@@ -1,8 +1,9 @@
 <?php
 
-namespace MA\PHPQUICK;
+namespace MA\PHPQUICK\Traits;
 
 use Firebase\JWT\{JWT, Key};
+use MA\PHPQUICK\Collection;
 
 trait Token
 {

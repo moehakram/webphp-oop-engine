@@ -19,21 +19,4 @@ abstract class Model extends Validator
     {
        return [];
     }
-
-    final public function has(string $key): bool
-    {
-        return isset($this->$key);
-    }
-
-    final public function get(string $key, $default = null)
-    {
-        return $this->$key ?? $default;
-    }
-
-    final public function set(string $key, $value)
-    {
-        if (property_exists($this, $key)) {
-            $this->$key = $value;
-        }
-    }   
 }
