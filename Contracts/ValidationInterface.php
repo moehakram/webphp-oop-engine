@@ -35,7 +35,7 @@ interface ValidationInterface
      * @param mixed $default The default value to return if the key does not exist.
      * @return mixed The value of the key, or the default value if not found.
      */
-    public function get(string $key, $default = null);
+    public function get(string $key, $default = null): mixed;
 
     /**
      * Sets a value for a specific key in the data.

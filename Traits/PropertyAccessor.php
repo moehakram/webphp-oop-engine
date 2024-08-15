@@ -9,12 +9,12 @@ trait PropertyAccessor
         return isset($this->$key);
     }
 
-    public function get(string $key, $default = null)
+    public function get(string $key, $default = null): mixed
     {
         return $this->$key ?? $default;
     }
 
-    public function set(string $key, $value)
+    public function set(string $key, $value): void
     {
         if (property_exists($this, $key)) {
             $this->$key = $value;

@@ -87,7 +87,7 @@ class Validation implements ValidationInterface
         return array_key_exists($key, $this->data);
     }
 
-    public function get(string $key, $default = null)
+    public function get(string $key, $default = null): mixed
     {
         return $this->data[$key] ?? $default;
     }
