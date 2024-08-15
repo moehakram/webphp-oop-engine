@@ -1,102 +1,98 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace MA\PHPQUICK\Validation;
 
 use MA\PHPQUICK\Collection;
+use MA\PHPQUICK\Contracts\ValidationInterface;
 use MA\PHPQUICK\Exceptions\ValidationException;
 
-class Validation
+class Validation implements ValidationInterface
 {
     use MethodsValidation;
 
-    const REQUIRED = 'required';
-    const EMAIL = 'email';
-    const MIN = 'min';
-    const MAX = 'max';
-    const BETWEEN = 'between';
-    const SAME = 'same';
-    const SECURE = 'secure';
-    const UNIQUE = 'unique';
-    const ALPHANUMERIC = 'alphanumeric';
-    const ALPHA = 'alpha';
-    const NUMERIC = 'numeric';
-
-    protected const DEFAULT_ERROR_MESSAGES = [
-        self::REQUIRED => 'Please enter the %s',
-        self::EMAIL => 'The %s is not a valid email address',
-        self::MIN => 'The %s must have at least %s characters',
-        self::MAX => 'The %s must have at most %s characters',
-        self::BETWEEN => 'The %s must have between %d and %d characters',
-        self::SAME => 'The %s must match with %s',
-        self::SECURE => 'The %s must have between 8 and 64 characters and contain at least one number, one upper case letter, one lower case letter and one special character',
-        self::UNIQUE => 'The %s already exists',
-        self::ALPHANUMERIC => 'The %s should have only letters and numbers',
-        self::ALPHA => 'The %s must be a alfhabet value',
-        self::NUMERIC => 'The %s must be a numeric value',
+    private const RULE_MESSAGES = [
+        'required' => 'Please enter the %s',
+        'email' => 'The %s is not a valid email address',
+        'min' => 'The %s must have at least %s characters',
+        'max' => 'The %s must have at most %s characters',
+        'between' => 'The %s must have between %d and %d characters',
+        'same' => 'The %s must match with %s',
+        'secure' => 'The %s must have between 8 and 64 characters and contain at least one number, one upper case letter, one lower case letter and one special character',
+        'unique' => 'The %s already exists',
+        'alnum' => 'The %s should have only letters and numbers',
+        'alpha' => 'The %s must be an alphabet value',
+        'numeric' => 'The %s must be a numeric value',
     ];
 
-    protected $data = [];
-    protected $validationRules = [];
-    protected $messages = [];
-    protected $errors = [];
+    private array $data;
+    private array $validationRules;
+    private array $messages;
 
     public function __construct(array $data, array $validationRules, array $messages = [])
     {
-        $this->loadData($data);
+        $this->data = $data;
         $this->messages = $messages;
-        $this->initializeRules($validationRules);     
+        $this->validationRules = $this->normalizeRules($validationRules);
     }
 
-    protected function initializeRules(array $fields){
-        foreach($fields as $field => $rules){
-            $this->validationRules[trim($field)] = is_string($rules) ? $this->split($rules, '|') : $rules;
+    private function normalizeRules(array $rules): array
+    {
+        $normalizedRules = [];
+        foreach ($rules as $field => $ruleSet) {
+            $normalizedRules[trim($field)] = is_array($ruleSet) ? $ruleSet : $this->split('|' ,$ruleSet);
         }
+        return $normalizedRules;
     }
 
-    protected function split($str, $separator){
+    private function split($separator, $str){
         return array_map('trim', explode($separator, $str));
     }
 
-    public function validate() : Collection
+    public function validate(): Collection
     {
-        $customRuleMessages = array_filter($this->messages, 'is_string');
-        $rulesMessages = array_merge(self::DEFAULT_ERROR_MESSAGES, $customRuleMessages);
+        $allMessages = array_merge(self::RULE_MESSAGES, array_filter($this->messages, 'is_string'));
 
+        $errors = [];
         foreach ($this->validationRules as $field => $rules) {
             foreach ($rules as $rule) {
-                [$ruleName, $params] = $this->parseRule($rule);
-                $methodName = 'is_' . $ruleName;
+                [$ruleName, $params] = $this->extractRuleNameAndParams($rule);
+                $method = 'is_' . $ruleName;
 
-                if (method_exists($this, $methodName) && !$this->$methodName($field, ...$params)) {
-                    $message = $this->messages[$field][$ruleName] ?? $rulesMessages[$ruleName] ?? 'The %s is not valid!';
-                    $this->errors[$field] = sprintf($message, $field, ...$params);
+                if (method_exists($this, $method) && !$this->$method($field, ...$params)) {
+                    $message = $this->messages[$field][$ruleName] ?? $allMessages[$ruleName] ?? 'The %s is not valid!';
+                    $errors[$field] = sprintf($message, $field, ...$params);
                 }
             }
         }
 
-        if($this->errors){
-            throw new ValidationException('Validation failed', new Collection($this->errors));
+        if ($errors) {
+            throw new ValidationException('Validation failed', new Collection($errors));
         }
 
         return new Collection($this->data);
     }
 
-    private function parseRule(string $rule): array
+    private function extractRuleNameAndParams($rule): array
     {
-        $params = [];
-        if (strpos($rule, ':') !== false) {
+        if (is_array($rule)) {
+            $ruleName = key($rule);
+            $params = is_array($rule[$ruleName]) ? $rule[$ruleName] : [$rule[$ruleName]];
+        } elseif (strpos($rule, ':') !== false) {
             [$ruleName, $paramStr] = explode(':', $rule, 2);
-            $params = explode(',', $paramStr);
+            $params = $this->split(',', $paramStr);
         } else {
             $ruleName = $rule;
+            $params = [];
         }
 
         return [trim($ruleName), $params];
     }
 
+
     public function has(string $key): bool
     {
-        return isset($this->data[$key]);
+        return array_key_exists($key, $this->data);
     }
 
     public function get(string $key, $default = null)
@@ -104,20 +100,8 @@ class Validation
         return $this->data[$key] ?? $default;
     }
 
-    public function set(string $key, $value)
+    public function set(string $key, $value): void
     {
         $this->data[$key] = $value;
-    }
-
-    private function loadData(array $data)
-    {
-        foreach ($data as $key => $value) {
-            $this->set($key, $value);
-        }
-    }
-
-    final public function __get(string $name)
-    {
-        return $this->get($name);
     }
 }

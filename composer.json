@@ -30,7 +30,7 @@
     },
     "scripts": {
         "test" : "phpunit",
-        "test-filter" : "phpunit --filter testValidationInValidAlfhabet"
+        "test-filter" : "phpunit tests/ValidationTest.php --filter testIsAlpha"
     },
     "authors": [
         {

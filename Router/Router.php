@@ -20,6 +20,21 @@ class Router
        return $this->register(Request::POST, $path, $callback, $middlewares);
     }
 
+    public function put(string $path, $callback, ...$middlewares): self
+    {
+       return $this->register(Request::PUT, $path, $callback, $middlewares);
+    }
+
+    public function patch(string $path, $callback, ...$middlewares): self
+    {
+       return $this->register(Request::PATCH, $path, $callback, $middlewares);
+    }
+
+    public function delete(string $path, $callback, ...$middlewares): self
+    {
+       return $this->register(Request::DELETE, $path, $callback, $middlewares);
+    }
+
     public function register(string $method, string $path, $callback, array $middlewares): self
     {
         $this->routes[$method][] = [

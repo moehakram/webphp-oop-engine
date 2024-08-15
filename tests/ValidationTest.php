@@ -19,7 +19,7 @@ final class ValidationTest extends TestCase
         ];
 
         $rules = [
-            'name' => 'required|alpha',
+            'name' => 'required|alpha_s',
             'email' => 'required|email',
             'password' => 'required|secure',
             'age' => 'required|numeric'
@@ -189,11 +189,13 @@ final class ValidationTest extends TestCase
         $data = [
             'email' => 'akram@example.com',
             'password' => 'Password123!',
+            'password2' => 'Password123!',
         ];
 
         $rules = [
             'email' => ['required', 'email'],
             'password' => ['required', 'secure'],
+            'password2' => ['required', 'secure', ['same'=>'password']],
         ];
 
         $validator = new Validation($data, $rules);
@@ -215,8 +217,8 @@ final class ValidationTest extends TestCase
         ];
 
         $rules = [
-            'email' => ['required', 'email'],
-            'password' => ['required', 'secure'],
+            'email' => [' required', 'email'],
+            'password' => ['required ', 'secure '],
         ];
 
         $validator = new Validation($data, $rules);
@@ -232,7 +234,7 @@ final class ValidationTest extends TestCase
         ];
 
         $rules = [
-            'name' => 'alfhabet'
+            'name' => ['alpha' => 's']
         ];
 
         $validator = new Validation($data, $rules);
@@ -265,8 +267,41 @@ final class ValidationTest extends TestCase
             $errors = $e->getErrors();
             $this->assertInstanceOf(Collection::class, $errors);
             $this->assertArrayHasKey('name', $errors->getAll());
-            $this->assertEquals('The name must be a alfhabet value', $errors->get('name'));
+            $this->assertEquals('The name must be an alphabet value', $errors->get('name'));
             throw $e;
+        }
+    }
+
+    public function testIsAlpha()
+    {
+        $data = [
+            'name1' => 'MuhammadAkram',
+            'name2' => 'Muhammad-Akram',
+            'name3' => 'Muhammad12Akram',
+            'name4' => '809',
+            'name5' => '809',
+            'name5' => '809Muhakda-nask',
+            'name6' => '809Muhakda_nask',
+            'name7' => 'Muhammad Akram',
+        ];
+
+        $rules = [
+            'name1' => ['alpha'],
+            'name2' => 'alpha: -',
+            'name3' => ['alpha'=>' n  '],
+            'name4' => 'alpha:N  ',
+            'name5' => 'alpha:n-',
+            'name6' => 'alpha:n _ ',
+            'name7' => ['alpha' => 'n_ s'],
+        ];
+
+        $validator = new Validation($data, $rules);
+        try {
+            $result = $validator->validate();
+            $this->assertInstanceOf(Collection::class, $result);
+            $this->assertEquals($data, $result->getAll());
+        } catch (ValidationException $e) {
+            $this->fail('Validation should pass' . print_r($e->getErrors()->getAll(), true));
         }
     }
 }

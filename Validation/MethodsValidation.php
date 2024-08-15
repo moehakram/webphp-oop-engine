@@ -1,8 +1,9 @@
 <?php
+declare(strict_types = 1);
+
 namespace MA\PHPQUICK\Validation;
 
 trait MethodsValidation {
-    
     /**
      * Return true if a string is not empty
      * @param string $field
@@ -33,13 +34,13 @@ trait MethodsValidation {
      * @param int $min
      * @return bool
      */
-    private function is_min(string $field, int $min): bool
+    private function is_min(string $field, int $length): bool
     {
         if (!$this->has($field)) {
             return true;
         }
 
-        return mb_strlen($this->get($field)) >= $min;
+        return mb_strlen($this->get($field)) >= $length;
     }
 
     /**
@@ -48,13 +49,13 @@ trait MethodsValidation {
      * @param int $max
      * @return bool
      */
-    private function is_max(string $field, int $max): bool
+    private function is_max(string $field, int $length): bool
     {
         if (!$this->has($field)) {
             return true;
         }
 
-        return mb_strlen($this->get($field)) <= $max;
+        return mb_strlen($this->get($field)) <= $length;
     }
 
     /**
@@ -69,7 +70,8 @@ trait MethodsValidation {
             return true;
         }
 
-        $len = mb_strlen($this->get($field));
+        $value = $this->get($field);
+        $len = mb_strlen($value);
         return $len >= $min && $len <= $max;
     }
 
@@ -98,13 +100,18 @@ trait MethodsValidation {
      * @param string $field
      * @return bool
      */
-    private function is_alphanumeric(string $field): bool
+    private function is_alnum(string $field): bool
     {
-        if (!$this->has($field)) {
+        if (! $this->has($field)) {
             return true;
         }
 
-        return ctype_alnum($this->get($field));
+        $value = $this->get($field);
+        if (! is_string($value) && ! is_numeric($value)) {
+            return false;
+        }
+
+        return preg_match('/^[\pL\pM\pN]+$/u', $value) > 0;
     }
 
     /**
@@ -160,23 +167,69 @@ trait MethodsValidation {
         return is_numeric($this->get($field));
     }
 
-
-    private function is_alpha(string $field): bool
+    private function is_alpha(string $field, ?string $extra = null): bool
     {
         if (!$this->has($field)) {
             return true;
         }
-
-        $words = explode(' ', trim($this->get($field)));
-        $allWordsAreAlpha = true;
         
-        foreach ($words as $word) {
-            if (!ctype_alpha($word)) {
-                $allWordsAreAlpha = false;
-                break;
-            }
+        $value = $this->get($field);
+        
+        if (!is_string($value)) {
+            return false;
+        }
+    
+        $extra = strtoupper($extra ?? '');
+    
+        // Base pattern for letters
+        $pattern = '/^[\pL\pM';
+    
+        // Add optional patterns based on the extra parameter
+        if (strpos($extra, 'N') !== false) {
+            $pattern .= '\pN';
+        }
+        if (strpos($extra, 'S') !== false) {
+            $pattern .= '\s';
+        }
+        if (strpos($extra, '_') !== false) {
+            $pattern .= '_';
+        }
+        if (strpos($extra, '-') !== false) {
+            $pattern .= '-';
+        }
+    
+        // Close the pattern
+        $pattern .= ']+$/u';
+    
+        return preg_match($pattern, $value) > 0;
+    }        
+
+
+    private function is_digit(string $field, int $min, int $max = null): bool
+    {
+        if (!$this->has($field)) {
+            return true;
+        }
+        $value = $this->get($field);
+        $length = mb_strlen((string) $value);
+
+        if($max === null){
+            return ! preg_match('/[^0-9]/', $value) &&  $length == $min;
         }
 
-        return $allWordsAreAlpha;
+        // digit between
+        return ! preg_match('/[^0-9]/', $value) && $length >= $min && $length <= $max;
+    }
+
+    private function is_regex(string $field, string $pattern): bool
+    {
+        
+        if (!$this->has($field)) {
+            return true;
+        }
+        
+        $value = $this->get($field);
+
+        return preg_match($pattern, (string)$value) > 0;
     }
 }

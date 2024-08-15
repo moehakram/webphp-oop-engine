@@ -1,9 +1,9 @@
 <?php
 namespace MA\PHPQUICK\MVC;
 
-use MA\PHPQUICK\Validation\Validator;
+use MA\PHPQUICK\Validation\Validation;
 
-abstract class Model extends Validator
+abstract class Model extends Validation
 {
     final public function __construct(array $data = [])
     {

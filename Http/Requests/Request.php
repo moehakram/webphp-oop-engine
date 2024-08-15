@@ -3,9 +3,7 @@ namespace MA\PHPQUICK\Http\Requests;
 
 use MA\PHPQUICK\Collection;
 use MA\PHPQUICK\Session\Session;
-use MA\PHPQUICK\Http\Requests\Files;
 use MA\PHPQUICK\Contracts\Authenticable;
-use MA\PHPQUICK\Http\Requests\RequestHeaders;
 use MA\PHPQUICK\Contracts\RequestInterface as IRequest;
 
 class Request implements IRequest
@@ -128,39 +126,19 @@ class Request implements IRequest
     public function input(string $name, $default = null)
     {
         if ($this->isJson()) {
-            $json = $this->getJsonBody();
-
-            if (array_key_exists($name, $json)) {
-                return $json[$name];
-            } else {
-                return $default;
-            }
-        } else {
-            $value = null;
-
-            switch ($this->method) {
-                case Request::GET:
-                    return $this->query->get($name, $default);
-                case Request::POST:
-                    $value = $this->post->get($name, $default);
-                    break;
-                case Request::DELETE:
-                    $value = $this->delete->get($name, $default);
-                    break;
-                case Request::PUT:
-                    $value = $this->put->get($name, $default);
-                    break;
-                case Request::PATCH:
-                    $value = $this->patch->get($name, $default);
-                    break;
-            }
-
-            if ($value === null) {
-                $value = $this->query->get($name, $default);
-            }
-
-            return $value;
+            return $this->getJsonBody()[$name] ?? $default;
         }
+
+        $value = match ($this->method) {
+            Request::GET => $this->query->get($name, $default),
+            Request::POST => $this->post->get($name, $default),
+            Request::DELETE => $this->delete->get($name, $default),
+            Request::PUT => $this->put->get($name, $default),
+            Request::PATCH => $this->patch->get($name, $default),
+            default => $this->query->get($name, $default),
+        };
+
+        return $value;
     }
 
     public function getFullUrl() : string
@@ -427,17 +405,11 @@ class Request implements IRequest
                 $collection = $this->originalMethodCollection->getAll();
             }
 
-            switch ($this->method) {
-                case Request::PUT:
-                    $this->put->exchangeArray($collection);
-                    break;
-                case Request::PATCH:
-                    $this->patch->exchangeArray($collection);
-                    break;
-                case Request::DELETE:
-                    $this->delete->exchangeArray($collection);
-                    break;
-            }
+            match ($this->method) {
+                Request::PUT => $this->put->exchangeArray($collection),
+                Request::PATCH => $this->patch->exchangeArray($collection),
+                Request::DELETE => $this->delete->exchangeArray($collection)
+            };
         }
     }
 
