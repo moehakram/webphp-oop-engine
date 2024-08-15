@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+
 namespace Tests;
 
 use MA\PHPQUICK\Collection;
@@ -195,7 +195,7 @@ final class ValidationTest extends TestCase
         $rules = [
             'email' => ['required', 'email'],
             'password' => ['required', 'secure'],
-            'password2' => ['required', 'secure', ['same'=>'password']],
+            'password2' => ['required', 'secure', 'same:password'],
         ];
 
         $validator = new Validation($data, $rules);
@@ -234,7 +234,7 @@ final class ValidationTest extends TestCase
         ];
 
         $rules = [
-            'name' => ['alpha' => 's']
+            'name' => ['alpha:s']
         ];
 
         $validator = new Validation($data, $rules);
@@ -286,13 +286,13 @@ final class ValidationTest extends TestCase
         ];
 
         $rules = [
-            'name1' => ['alpha'],
+            'name1' => 'alpha',
             'name2' => 'alpha: -',
-            'name3' => ['alpha'=>' n  '],
+            'name3' => 'alpha: n  ',
             'name4' => 'alpha:N  ',
             'name5' => 'alpha:n-',
             'name6' => 'alpha:n _ ',
-            'name7' => ['alpha' => 'n_ s'],
+            'name7' => 'alpha:n_ s',
         ];
 
         $validator = new Validation($data, $rules);

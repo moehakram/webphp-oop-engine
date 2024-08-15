@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 namespace MA\PHPQUICK\Validation;
 
@@ -75,18 +74,11 @@ class Validation implements ValidationInterface
 
     private function extractRuleNameAndParams($rule): array
     {
-        if (is_array($rule)) {
-            $ruleName = key($rule);
-            $params = is_array($rule[$ruleName]) ? $rule[$ruleName] : [$rule[$ruleName]];
-        } elseif (strpos($rule, ':') !== false) {
+        if (strpos($rule, ':') !== false) {
             [$ruleName, $paramStr] = explode(':', $rule, 2);
-            $params = $this->split(',', $paramStr);
-        } else {
-            $ruleName = $rule;
-            $params = [];
+            return [trim($ruleName), $this->split(',', $paramStr)];
         }
-
-        return [trim($ruleName), $params];
+        return [trim($rule), []];
     }
 
 
