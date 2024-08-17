@@ -75,9 +75,9 @@ class Request implements IRequest
     private function initializeCollection(){
         $this->query = new Collection($_GET);
         $this->post = new Collection($_POST);
-        $this->put = new Collection([]);
-        $this->patch = new Collection([]);
-        $this->delete = new Collection([]);
+        $this->put = new Collection();
+        $this->patch = new Collection();
+        $this->delete = new Collection();
         $this->files = new Files($_FILES);
         $this->cookies = new Collection($_COOKIE);
     }
@@ -107,7 +107,7 @@ class Request implements IRequest
         return $this->files;
     }
 
-    public function post($name = null, $default = null) : null|array|string
+    public function post($name = null, $default = null): mixed
     {
         if (is_null($name)) {
             return $this->post->getAll();
@@ -115,12 +115,22 @@ class Request implements IRequest
         return $this->post->get($name, $default);
     }
 
-    public function query($name = null, $default = null) : null|array|string
+    public function query($name = null, $default = null): mixed
     {
         if (is_null($name)) {
             return $this->query->getAll();
         }
         return $this->query->get($name, $default);
+    }
+
+    public function get(string $name, $default = null): mixed
+    {
+        return $this->input($name, $default);
+    }
+
+    public function __get(string $name): mixed
+    {
+        return $this->input($name);
     }
 
     public function input(string $name, $default = null)
@@ -129,7 +139,7 @@ class Request implements IRequest
             return $this->getJsonBody()[$name] ?? $default;
         }
 
-        $value = match ($this->method) {
+        return match ($this->method) {
             Request::GET => $this->query->get($name, $default),
             Request::POST => $this->post->get($name, $default),
             Request::DELETE => $this->delete->get($name, $default),
@@ -137,8 +147,6 @@ class Request implements IRequest
             Request::PATCH => $this->patch->get($name, $default),
             default => $this->query->get($name, $default),
         };
-
-        return $value;
     }
 
     public function getFullUrl() : string
@@ -305,11 +313,10 @@ class Request implements IRequest
             $method = $this->server->get('REQUEST_METHOD', Request::GET);
 
             if ($method == Request::POST) {
-                if (($overrideMethod = $this->server->get('X-HTTP-METHOD-OVERRIDE')) !== null) {
-                    $method = $overrideMethod;
-                } elseif (($overrideMethod = $this->post->get('_method')) !== null) {
-                    $method = $overrideMethod;
-                } elseif (($overrideMethod = $this->query->get('_method')) !== null) {
+
+                $overrideMethod = $this->server->get('X-HTTP-METHOD-OVERRIDE') ?? $this->post->get('_method') ?? $this->query->get('_method');
+             
+                if($overrideMethod !== null){
                     $method = $overrideMethod;
                 }
 
@@ -396,8 +403,8 @@ class Request implements IRequest
     private function setUnsupportedMethodsCollections()
     {
 
-        if ((mb_strpos($this->headers->get('CONTENT_TYPE') ?? '', 'application/x-www-form-urlencoded') === 0
-                || mb_strpos($this->headers->get('CONTENT_TYPE') ?? '', 'multipart/form-data') === 0) &&
+        if ((mb_strpos($this->headers->get('CONTENT_TYPE', ''), 'application/x-www-form-urlencoded') === 0
+                || mb_strpos($this->headers->get('CONTENT_TYPE', ''), 'multipart/form-data') === 0) &&
             in_array($this->method, [Request::PUT, Request::PATCH, Request::DELETE])){
             if ($this->originalMethodCollection === null) {
                 parse_str($this->getRawBody(), $collection);

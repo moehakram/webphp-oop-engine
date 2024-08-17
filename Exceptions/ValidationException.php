@@ -1,7 +1,7 @@
 <?php
 namespace MA\PHPQUICK\Exceptions;
 
-use MA\PHPQUICK\Collection;
+use MA\PHPQUICK\Contracts\CollectionInterface as Errors;
 use MA\PHPQUICK\Contracts\ResponseInterface as Response;
 
 class ValidationException extends \Exception
@@ -11,14 +11,14 @@ class ValidationException extends \Exception
 
     public function __construct(
         string $message = "Validation Error",
-        private ?Collection $errors = null,
+        private ?Errors $errors = null,
         private ?Response $response = null
         )
     {
         parent::__construct($message);
     }
 
-    public function getErrors(): ?Collection
+    public function getErrors(): ?Errors
     {
         return $this->errors;
     }

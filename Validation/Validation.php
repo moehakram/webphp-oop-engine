@@ -30,9 +30,16 @@ class Validation implements ValidationInterface
 
     public function __construct(array $data, array $validationRules, array $messages = [])
     {
-        $this->data = $data;
+        $this->loadData($data);
         $this->messages = $messages;
         $this->validationRules = $this->normalizeRules($validationRules);
+    }
+
+    final protected function loadData(array $data)
+    {
+        foreach ($data as $key => $value) {
+            $this->set($key, $value);
+        }
     }
 
     private function normalizeRules(array $rules): array
@@ -52,15 +59,20 @@ class Validation implements ValidationInterface
     {
         $allMessages = array_merge(self::RULE_MESSAGES, array_filter($this->messages, 'is_string'));
 
+        $data = [];
         $errors = [];
         foreach ($this->validationRules as $field => $rules) {
             foreach ($rules as $rule) {
                 [$ruleName, $params] = $this->extractRuleNameAndParams($rule);
                 $method = 'is_' . $ruleName;
 
-                if (method_exists($this, $method) && !$this->$method($field, ...$params)) {
-                    $message = $this->messages[$field][$ruleName] ?? $allMessages[$ruleName] ?? 'The %s is not valid!';
-                    $errors[$field] = sprintf($message, $field, ...$params);
+                if (method_exists($this, $method)) {
+                    if($this->$method($field, ...$params)){
+                        $data[$field] = $this->get($field);
+                    }else{
+                        $message = $this->messages[$field][$ruleName] ?? $allMessages[$ruleName] ?? 'The %s is not valid!';
+                        $errors[$field] = sprintf($message, $field, ...$params);
+                    }
                 }
             }
         }
@@ -69,7 +81,7 @@ class Validation implements ValidationInterface
             throw new ValidationException('Validation failed', new Collection($errors));
         }
 
-        return new Collection($this->data);
+        return new Collection($data);
     }
 
     private function extractRuleNameAndParams($rule): array
@@ -84,7 +96,7 @@ class Validation implements ValidationInterface
 
     public function has(string $key): bool
     {
-        return array_key_exists($key, $this->data);
+        return isset($this->data[$key]);
     }
 
     public function get(string $key, $default = null): mixed

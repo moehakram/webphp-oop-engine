@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace MA\PHPQUICK;
 
-class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
+use MA\PHPQUICK\Contracts\CollectionInterface;
+
+class Collection implements CollectionInterface
 {
     protected array $items = [];
 
@@ -24,7 +26,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
         return $this->items[$key] ?? $default;
     }
 
-    public function set(string $key, $value)
+    public function set(string $key, $value): void
     {
         $this->items[$key] = $value;
     }
@@ -37,7 +39,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
         return $oldValues;
     }
 
-    public function remove(string $key)
+    public function remove(string $key): void
     {
         unset($this->items[$key]);
     }
@@ -47,7 +49,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
         return isset($this->items[$key]);
     }
 
-    public function clear()
+    public function clear(): void
     {
         $this->items = [];
     }
@@ -55,11 +57,6 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
     public function count(): int
     {
         return count($this->items);
-    }
-
-    public function isEmpty(): bool
-    {
-        return $this->count() === 0;
     }
 
     public function getIterator(): \Traversable
@@ -87,12 +84,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
         $this->remove($offset);
     }
 
-    public function __get($name)
-    {
-        return $this->get($name);
-    }
-
-    public function add($key, $value = null)
+    public function add($key, $value = null): void
     {
         $keys = is_array($key) ? $key : [$key => $value];
         
@@ -112,5 +104,10 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
         }
 
         return $this->get($key, $default);
+    }
+
+    public function __get($name)
+    {
+        return $this->get($name);
     }
 }

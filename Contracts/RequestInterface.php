@@ -30,6 +30,8 @@ interface RequestInterface
     
     public function getHost() : string;
 
+    public function get(string $name, $default = null): mixed;
+
     public function input(string $name, $default = null);
 
     public function getJsonBody() : array;
