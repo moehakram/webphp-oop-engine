@@ -4,13 +4,7 @@ namespace MA\PHPQUICK\Http\Requests;
 use MA\PHPQUICK\Http\Headers;
 
 class RequestHeaders extends Headers
-{
-    const CLIENT_HOST = 'client-host';
-    const CLIENT_IP = 'client-ip';
-    const CLIENT_PORT = 'client-port';
-    const CLIENT_PROTO = 'client-proto';
-    const FORWARDED = 'forwarded';
-    
+{   
     protected static $specialCaseHeaders = [
         'AUTH_TYPE' => true,
         'CONTENT_LENGTH' => true,

@@ -9,12 +9,6 @@ use MA\PHPQUICK\Http\Requests\RequestHeaders;
 
 interface RequestInterface
 {
-    
-    public static function setTrustedHeaderName(string $name, $value);
-
-    public static function setTrustedProxies($trustedProxies);
-
-    public function getClientIPAddress() : string;
 
     public function cookies() : Collection;
 
@@ -24,23 +18,17 @@ interface RequestInterface
 
     public function query($key = null, $default = null);
 
-    public function getFullUrl() : string;
-
-    public function headers() : RequestHeaders;
-    
-    public function getHost() : string;
-
     public function get(string $name, $default = null): mixed;
 
     public function input(string $name, $default = null);
+    
+    public function headers() : RequestHeaders;
 
     public function getJsonBody() : array;
 
     public function getMethod() : string;
 
     public function getPath() : string;
-
-    public function getPort() : int;
 
     public function getPreviousUrl() : string;
 
@@ -53,12 +41,6 @@ interface RequestInterface
     public function isAjax() : bool;
 
     public function isJson() : bool;
-
-    public function isPath(string $path, bool $isRegex = false) : bool;
-
-    public function isSecure() : bool;
-
-    public function isUrl(string $url, bool $isRegex = false) : bool;
 
     public function setMethod(string $method = null);
 

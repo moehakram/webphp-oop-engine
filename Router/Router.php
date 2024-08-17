@@ -50,12 +50,10 @@ class Router
     {
         $clean = fn($path) => str_replace(['%20', ' '], '-', rtrim($path, '/')) ?: '/';
         foreach ($this->routes[$method] ?? [] as $route) {
-            // Mengganti :variable dengan ekspresi regular untuk menangkap nilai variabel
             $pattern = '#^' . preg_replace('/:(\w+)/', '(?P<\1>[^/]+)', $clean($route['path'])) . '$#';
-
             if (preg_match($pattern, $clean($path), $variabels)) {
-                array_shift($variabels);
-                return new Route($route['callback'], $route['middlewares'], $variabels);
+                $params = array_filter($variabels, fn($key) => is_string($key), ARRAY_FILTER_USE_KEY);
+                return new Route($route['callback'], $route['middlewares'], $params);
             }
         }
         throw new HttpNotFoundException(sprintf('Route Not Found "{ %s }"', $path));

@@ -15,26 +15,16 @@ class Request implements IRequest
     const PATCH = 'PATCH';
     const DELETE = 'DELETE';
 
-    private const VALIDMETHODS = [
+    private const VALID_METHODS = [
         self::GET,
         self::POST,
         self::PUT,
         self::PATCH,
         self::DELETE
     ];
-    
-    private static $trustedProxies = [];
-    private static $trustedHeaderNames = [
-        RequestHeaders::FORWARDED => 'FORWARDED',
-        RequestHeaders::CLIENT_IP => 'X_FORWARDED_FOR',
-        RequestHeaders::CLIENT_HOST => 'X_FORWARDED_HOST',
-        RequestHeaders::CLIENT_PORT => 'X_FORWARDED_PORT',
-        RequestHeaders::CLIENT_PROTO => 'X_FORWARDED_PROTO'
-    ];
 
     private string $path;
     private string $method;
-    private array $clientIPAddresses = [];
 
     private Collection $query;
     private Collection $post;
@@ -55,19 +45,18 @@ class Request implements IRequest
         $this->initializeCollection();
         $this->setPath();
         $this->setMethod();
-        $this->setClientIPAddresses();
         $this->setUnsupportedMethodsCollections();
     }
 
     private function initializeServerAndHeaders(){
         $server = $_SERVER;
-        if (array_key_exists('HTTP_CONTENT_LENGTH', $server)) {
-            $server['CONTENT_LENGTH'] = $server['HTTP_CONTENT_LENGTH'];
+
+        foreach (['HTTP_CONTENT_LENGTH' => 'CONTENT_LENGTH', 'HTTP_CONTENT_TYPE' => 'CONTENT_TYPE'] as $httpKey => $serverKey) {
+            if (isset($server[$httpKey])) {
+                $server[$serverKey] = $server[$httpKey];
+            }
         }
 
-        if (array_key_exists('HTTP_CONTENT_TYPE', $server)) {
-            $server['CONTENT_TYPE'] = $server['HTTP_CONTENT_TYPE'];
-        }
         $this->server = new Collection($server);
         $this->headers = new RequestHeaders($server);
     }
@@ -80,21 +69,6 @@ class Request implements IRequest
         $this->delete = new Collection();
         $this->files = new Files($_FILES);
         $this->cookies = new Collection($_COOKIE);
-    }
-
-    public static function setTrustedHeaderName(string $name, $value)
-    {
-        self::$trustedHeaderNames[$name] = $value;
-    }
-
-    public static function setTrustedProxies($trustedProxies)
-    {
-        self::$trustedProxies = (array)$trustedProxies;
-    }
-
-    public function getClientIPAddress() : string
-    {
-        return $this->clientIPAddresses[0];
     }
 
     public function cookies() : Collection
@@ -149,62 +123,11 @@ class Request implements IRequest
         };
     }
 
-    public function getFullUrl() : string
-    {
-        $isSecure = $this->isSecure();
-        $rawProtocol = strtolower($this->server->get('SERVER_PROTOCOL'));
-        $parsedProtocol = substr($rawProtocol, 0, strpos($rawProtocol, '/')) . ($isSecure ? 's' : '');
-        $port = $this->getPort();
-        $host = $this->getHost();
-
-        // Prepend a colon if the port is non-standard
-        if ((!$isSecure && $port != '80') || ($isSecure && $port != '443')) {
-            $port = ":$port";
-        } else {
-            $port = '';
-        }
-
-        return $parsedProtocol . '://' . $host . $port . $this->server->get('REQUEST_URI');
-    }
-
     public function headers() : RequestHeaders
     {
         return $this->headers;
     }
 
-    public function getHost() : string
-    {
-        $host = null;
-
-        if ($this->isUsingTrustedProxy() && $this->headers->has(self::$trustedHeaderNames[RequestHeaders::CLIENT_HOST])) {
-            $hosts = explode(',', $this->headers->get(self::$trustedHeaderNames[RequestHeaders::CLIENT_HOST]));
-            $host = trim(end($hosts));
-        }
-
-        if ($host === null) {
-            $host = $this->headers->get('HOST');
-        }
-
-        if ($host === null) {
-            $host = $this->server->get('SERVER_NAME');
-        }
-
-        if ($host === null) {
-            // Return an empty string by default so we can do string operations on it later
-            $host = $this->server->get('SERVER_ADDR', '');
-        }
-
-        // Remove the port number
-        $host = strtolower(preg_replace("/:\d+$/", '', trim($host)));
-
-        // Check for forbidden characters
-        // Credit: Symfony HTTPFoundation
-        if (!empty($host) && !empty(preg_replace("/(?:^\[)?[a-zA-Z0-9-:\]_]+\.?/", '', $host))) {
-            throw new \InvalidArgumentException("Invalid host \"$host\"");
-        }
-
-        return $host;
-    }
 
     public function getJsonBody() : array
     {
@@ -227,34 +150,14 @@ class Request implements IRequest
         return $this->path;
     }
 
-    public function getPort() : int
-    {
-        if ($this->isUsingTrustedProxy()) {
-            if ($this->server->has(self::$trustedHeaderNames[RequestHeaders::CLIENT_PORT])) {
-                return (int)$this->server->get(self::$trustedHeaderNames[RequestHeaders::CLIENT_PORT]);
-            } elseif ($this->server->get(self::$trustedHeaderNames[RequestHeaders::CLIENT_PROTO]) === 'https') {
-                return 443;
-            }
-        }
-
-        return (int)$this->server->get('SERVER_PORT');
-    }
-
     public function getPreviousUrl() : string
     {
-        if (!empty($this->previousUrl)) {
-            return $this->previousUrl;
-        }       
-        return $this->headers->get('REFERER', '');
+        return $this->previousUrl ?: $this->headers->get('REFERER', '');
     }
 
     public function getRawBody() : string
     {
-        if ($this->rawBody === null) {
-            $this->rawBody = file_get_contents('php://input');
-        }
-
-        return $this->rawBody;
+        return $this->rawBody ??= file_get_contents('php://input');
     }
 
     public function getServer() : Collection
@@ -277,71 +180,29 @@ class Request implements IRequest
         return preg_match("/application\/json/i", $this->headers->get('CONTENT_TYPE') ?? '') === 1;
     }
 
-    public function isPath(string $path, bool $isRegex = false) : bool
-    {
-        if ($isRegex) {
-            return preg_match('#^' . $path . '$#', $this->path) === 1;
-        } else {
-            return $this->path == $path;
-        }
-    }
-
-    public function isSecure() : bool
-    {
-        if ($this->isUsingTrustedProxy() && $this->server->has(self::$trustedHeaderNames[RequestHeaders::CLIENT_PROTO])) {
-            $protoString = $this->server->get(self::$trustedHeaderNames[RequestHeaders::CLIENT_PROTO]);
-            $protoArray = explode(',', $protoString);
-
-            return count($protoArray) > 0 && in_array(strtolower($protoArray[0]), ['https', 'ssl', 'on']);
-        }
-
-        return $this->server->has('HTTPS') && $this->server->get('HTTPS') !== 'off';
-    }
-
-    public function isUrl(string $url, bool $isRegex = false) : bool
-    {
-        if ($isRegex) {
-            return preg_match('#^' . $url . '$#', $this->getFullUrl()) === 1;
-        } else {
-            return $this->getFullUrl() == $url;
-        }
-    }
-
     public function setMethod(string $method = null)
     {
-        if ($method === null) {
-            $method = $this->server->get('REQUEST_METHOD', Request::GET);
+        $method = $method ?? $this->server->get('REQUEST_METHOD', Request::GET);
 
-            if ($method == Request::POST) {
+        if ($method == Request::POST) {
 
-                $overrideMethod = $this->server->get('X-HTTP-METHOD-OVERRIDE') ?? $this->post->get('_method') ?? $this->query->get('_method');
-             
-                if($overrideMethod !== null){
-                    $method = $overrideMethod;
-                }
+            $$method = $this->server->get('X-HTTP-METHOD-OVERRIDE') 
+                ?? $this->post->get('_method') 
+                ?? $this->query->get('_method')
+                ?? $method;
 
-                $this->originalMethodCollection = $this->post;
-            }
+            $this->originalMethodCollection = $this->post;
         }
+        
+        $this->validateAndSetMethod($method);
+    }
 
-        if (!is_string($method)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    'HTTP method must be string, %s provided',
-                    is_object($method) ? get_class($method) : gettype($method)
-                )
-            );
-        }
-
+    private function validateAndSetMethod(string $method): void
+    {
         $method = strtoupper($method);
 
-        if (!in_array($method, self::VALIDMETHODS)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    'Invalid HTTP method "%s"',
-                    $method
-                )
-            );
+        if (!in_array($method, self::VALID_METHODS)) {
+            throw new \InvalidArgumentException("Invalid HTTP method \"$method\"");
         }
 
         $this->method = $method;
@@ -349,11 +210,7 @@ class Request implements IRequest
 
     public function setPath(string $path = null)
     {
-        if ($path === null) {
-            $this->path = $this->server->get('PATH_INFO', '/');
-        } else {
-            $this->path = $path;
-        }
+        $this->path = $path ?? $this->server->get('PATH_INFO', '/');
     }
 
     public function setPreviousUrl(string $previousUrl)
@@ -361,51 +218,17 @@ class Request implements IRequest
         $this->previousUrl = $previousUrl;
     }
 
-    private function isUsingTrustedProxy() : bool
+
+    private function isUnsupportedMethod(): bool
     {
-        return in_array($this->server->get('REMOTE_ADDR'), self::$trustedProxies);
-    }
-
-    private function setClientIPAddresses()
-    {
-        if ($this->isUsingTrustedProxy()) {
-            $this->clientIPAddresses = [$this->server->get('REMOTE_ADDR')];
-        } else {
-            $ipAddresses = [];
-
-            // RFC 7239
-            if ($this->headers->has(self::$trustedHeaderNames[RequestHeaders::FORWARDED])) {
-                $header = $this->headers->get(self::$trustedHeaderNames[RequestHeaders::FORWARDED]);
-                preg_match_all("/for=(?:\"?\[?)([a-z0-9:\.\-\/_]*)/", $header, $matches);
-                $ipAddresses = $matches[1];
-            } elseif ($this->headers->has(self::$trustedHeaderNames[RequestHeaders::CLIENT_IP])) {
-                $ipAddresses = explode(',', $this->headers->get(self::$trustedHeaderNames[RequestHeaders::CLIENT_IP]));
-                $ipAddresses = array_map('trim', $ipAddresses);
-            }
-
-            $ipAddresses[] = $this->server->get('REMOTE_ADDR');
-            $fallbackIpAddresses = [$ipAddresses[0]];
-
-            foreach ($ipAddresses as $index => $ipAddress) {
-                if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
-                    unset($ipAddresses[$index]);
-                }
-
-                if (in_array($ipAddress, self::$trustedProxies)) {
-                    unset($ipAddresses[$index]);
-                }
-            }
-
-            $this->clientIPAddresses = count($ipAddresses) === 0 ? $fallbackIpAddresses : array_reverse($ipAddresses);
-        }
+        return (mb_strpos($this->headers->get('CONTENT_TYPE', ''), 'application/x-www-form-urlencoded') === 0
+                || mb_strpos($this->headers->get('CONTENT_TYPE', ''), 'multipart/form-data') === 0) 
+                && in_array($this->method, [Request::PUT, Request::PATCH, Request::DELETE]);
     }
 
     private function setUnsupportedMethodsCollections()
     {
-
-        if ((mb_strpos($this->headers->get('CONTENT_TYPE', ''), 'application/x-www-form-urlencoded') === 0
-                || mb_strpos($this->headers->get('CONTENT_TYPE', ''), 'multipart/form-data') === 0) &&
-            in_array($this->method, [Request::PUT, Request::PATCH, Request::DELETE])){
+        if ($this->isUnsupportedMethod()){
             if ($this->originalMethodCollection === null) {
                 parse_str($this->getRawBody(), $collection);
             } else {
@@ -419,7 +242,6 @@ class Request implements IRequest
             };
         }
     }
-
     
     public function login(?Authenticable $user){
         $this->user = $user;
