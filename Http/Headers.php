@@ -36,12 +36,12 @@ class Headers extends Collection
         return parent::has($this->normalizeName($name));
     }
 
-    public function remove(string $name)
+    public function remove(string $name): void
     {
         parent::remove($this->normalizeName($name));
     }
 
-    public function set(string $name, $values, bool $shouldReplace = true)
+    public function set(string $name, $values, bool $shouldReplace = true): void
     {
         $name = $this->normalizeName($name);
         $values = (array)$values;
