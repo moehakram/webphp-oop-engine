@@ -17,6 +17,7 @@ class Bootstrap
         private Closure $initializeRepositories,
         private Closure $middlewareAliases,
         private Closure $middlewareGlobal,
+        private Closure $initializeSession,
         private ?Closure $exceptionHandler = null,
         private ?Closure $initializeDomain = null,
         private ?Closure $initializeDatabase = null,
@@ -144,7 +145,7 @@ class Bootstrap
 
     private function initializeSession(App $app): void
     {
-        $app->instance('session', new Session());
+        ($this->initializeSession)($app);
     }
 
     private function customBootMethods(App $app): void
