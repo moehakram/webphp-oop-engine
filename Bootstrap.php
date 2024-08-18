@@ -5,7 +5,6 @@ namespace MA\PHPQUICK;
 
 use Closure;
 use MA\PHPQUICK\MVC\View;
-use MA\PHPQUICK\Session\Session;
 use MA\PHPQUICK\Database\Database;
 use MA\PHPQUICK\Http\Responses\Response;
 use MA\PHPQUICK\Contracts\ContainerInterface as App;
@@ -17,6 +16,7 @@ class Bootstrap
         private Closure $initializeRepositories,
         private Closure $middlewareAliases,
         private Closure $middlewareGlobal,
+        private Closure $initializeSession,
         private ?Closure $exceptionHandler = null,
         private ?Closure $initializeDomain = null,
         private ?Closure $initializeDatabase = null,
@@ -144,7 +144,7 @@ class Bootstrap
 
     private function initializeSession(App $app): void
     {
-        $app->instance('session', new Session());
+        ($this->initializeSession)($app);
     }
 
     private function customBootMethods(App $app): void
