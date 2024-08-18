@@ -43,6 +43,6 @@ interface ValidationInterface
      * @param string $key The key to set the value for.
      * @param mixed $value The value to set.
      */
-    public function set(string $key, $value): void;
+    public function set(string $key, $value): self;
 
 }
