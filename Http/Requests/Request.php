@@ -186,7 +186,7 @@ class Request implements IRequest
 
         if ($method == Request::POST) {
 
-            $$method = $this->server->get('X-HTTP-METHOD-OVERRIDE') 
+            $method = $this->server->get('X-HTTP-METHOD-OVERRIDE') 
                 ?? $this->post->get('_method') 
                 ?? $this->query->get('_method')
                 ?? $method;
