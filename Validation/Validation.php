@@ -104,7 +104,7 @@ class Validation implements ValidationInterface
         return $this->data[$key] ?? $default;
     }
 
-    public function set(string $key, $value): static
+    public function set(string $key, $value): self
     {
         $this->data[$key] = $value;
         return $this;

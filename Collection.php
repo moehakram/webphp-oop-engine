@@ -31,7 +31,7 @@ class Collection implements CollectionInterface
         return $this->items[$key] ?? $default;
     }
 
-    public function set(string $key, $value): static
+    public function set(string $key, $value): self
     {
         $this->items[$key] = $value;
         return $this;
@@ -45,7 +45,7 @@ class Collection implements CollectionInterface
         return $oldValues;
     }
 
-    public function remove(string $key): static
+    public function remove(string $key): self
     {
         unset($this->items[$key]);
         return $this;
@@ -56,7 +56,7 @@ class Collection implements CollectionInterface
         return isset($this->items[$key]);
     }
 
-    public function clear(): static
+    public function clear(): self
     {
         $this->items = [];
         return $this;
@@ -92,7 +92,7 @@ class Collection implements CollectionInterface
         $this->remove($offset);
     }
 
-    public function add($key, $value = null): static
+    public function add($key, $value = null): self
     {
         $keys = is_array($key) ? $key : [$key => $value];
         
