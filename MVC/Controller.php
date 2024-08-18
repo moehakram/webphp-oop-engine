@@ -14,6 +14,6 @@ abstract class Controller
 
     protected function view(string $view, array $data = [], ?string $layout = null): View
     {
-        return view($view, $data, $layout ?? $this->layout);
+        return View::make($view, $data, $layout ?? $this->layout);
     }
 }
