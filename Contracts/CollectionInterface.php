@@ -6,19 +6,21 @@ interface CollectionInterface extends \IteratorAggregate, \Countable, \ArrayAcce
 {
     public function getAll(): array;
 
+    public function toArray(): array;
+
     public function get(string $key, $default = null);
 
-    public function set(string $key, $value): void;
+    public function set(string $key, $value): self;
 
     public function exchangeArray(array $array): array;
 
-    public function remove(string $key): void;
+    public function remove(string $key): self;
 
     public function has(string $key): bool;
 
-    public function clear(): void;
+    public function clear(): self;
 
-    public function add($key, $value = null): void;
+    public function add($key, $value = null): self;
 
     public function getOrSet($key = null, $default = null);
 }

@@ -5,20 +5,25 @@ use MA\PHPQUICK\Collection;
 
 class Session extends Collection
 {
-    const FLASH = 'FLASH_MESSAGES';
+    const FLASH = '_FLASH';
 
     public function __construct()
     {
         session_start();
         parent::__construct($_SESSION);
+        $this->initializeFlashMessages();
+    }
+
+    private function initializeFlashMessages(): void
+    {
         $flashMessages = $this->get(self::FLASH, []);
-        foreach ($flashMessages as $key => &$flashMessage) {
+        foreach ($flashMessages as &$flashMessage) {
             $flashMessage['is_remove'] = true;
         }
         $this->set(self::FLASH, $flashMessages);
     }
 
-    public function setFlash(string $key, $value)
+    public function setFlash(string $key, $value): self
     {
         $flashMessages = $this->get(self::FLASH, []);
         $flashMessages[$key] = [
@@ -26,6 +31,7 @@ class Session extends Collection
             'value' => $value
         ];
         $this->set(self::FLASH, $flashMessages);
+        return $this;
     }
 
     public function getFlash(string $key)
@@ -34,14 +40,9 @@ class Session extends Collection
         return $flashMessages[$key]['value'] ?? [];
     }
 
-    private function removeFlashMessages()
+    private function removeFlashMessages(): void
     {
-        $flashMessages = $this->get(self::FLASH, []);
-        foreach ($flashMessages as $key => $flashMessage) {
-            if ($flashMessage['is_remove']) {
-                unset($flashMessages[$key]);
-            }
-        }
+        $flashMessages = array_filter($this->get(self::FLASH, []), fn($msg) => !$msg['is_remove']);
         $this->set(self::FLASH, $flashMessages);
     }
 
@@ -51,7 +52,7 @@ class Session extends Collection
         $_SESSION = $this->getAll();
     }
 
-    public function flash($key, $value = null)
+    public function flash($key, $value = null): void
     {
         $keys = is_array($key) ? $key : [$key => $value];
 

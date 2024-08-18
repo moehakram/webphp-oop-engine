@@ -8,42 +8,71 @@ use PDOException;
 class Database
 {
     private static ?PDO $pdo = null;
+    private array $dbconfig;
+    private string $username;
+    private string $password;
 
-    private static function initialize(): void
+    public function __construct(array $dbconfig, string $username = 'root', string $password = '')
     {
-        if (self::$pdo === null) {
+        $this->dbconfig = $dbconfig;
+        $this->username = $username;
+        $this->password = $password;
 
-            if(!$db = config('database')){
-                throw new Exception('Config database not found', 500);
-            }
-            $dsn = sprintf("%s:host=%s;port=%s;dbname=%s;charset=%s", $db['driver'] ,$db['host'], $db['port'], $db['dbname'], $db['charset']);
-            
-            try {
-                self::$pdo = new PDO($dsn, $db['username'], $db['password']);
-            } catch (PDOException $e) {
-                throw new Exception('Koneksi ke basis data gagal: ' . $e->getMessage());
-            }
+        if (self::$pdo === null) {
+            self::$pdo = $this->initialize();
         }
+    }
+
+    private function initialize(): PDO
+    {
+        $db = $this->dbconfig;
+
+        if (!$db) {
+            throw new Exception('Config database not found', 500);
+        }
+
+        $dsn = sprintf(
+            "%s:host=%s;port=%s;dbname=%s;charset=%s",
+            $db['driver'],
+            $db['host'],
+            $db['port'],
+            $db['dbname'],
+            $db['charset']
+        );
+
+        try {
+            return new PDO($dsn, $this->username, $this->password);
+        } catch (PDOException $e) {
+            throw new Exception('Koneksi ke basis data gagal: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function query(string $query, ?array $params = null): \PDOStatement|false
+    {
+        $statement = self::$pdo->prepare($query);
+        
+        $statement->execute($params);
+
+        return $statement;
     }
 
     public static function getConnection(): PDO
     {
-        self::initialize();
-        return self::$pdo;
+        return self::$pdo ??= (new static(config('database'), config('database.username'), config('database.password')))->initialize();
     }
 
-    public static function beginTransaction()
+    public static function beginTransaction(): void
     {
-        self::$pdo->beginTransaction();
+        self::getConnection()->beginTransaction();
     }
 
-    public static function commitTransaction()
+    public static function commitTransaction(): void
     {
-        self::$pdo->commit();
+        self::getConnection()->commit();
     }
 
-    public static function rollbackTransaction()
+    public static function rollbackTransaction(): void
     {
-        self::$pdo->rollBack();
+        self::getConnection()->rollBack();
     }
 }

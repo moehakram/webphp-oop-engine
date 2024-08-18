@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 namespace MA\PHPQUICK;
 
 class Config extends Collection
@@ -20,7 +18,7 @@ class Config extends Collection
         return $config;
     }
 
-    public function set(string $key, $value): void
+    public function set(string $key, $value): self
     {
         $keys = explode('.', $key);
         $temp = &$this->items;
@@ -33,5 +31,7 @@ class Config extends Collection
         }
 
         $temp = $value;
+
+        return $this;
     }
 }

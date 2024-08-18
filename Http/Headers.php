@@ -7,13 +7,14 @@ use MA\PHPQUICK\Collection;
 class Headers extends Collection
 {
 
-    public function add($key, $values = null, bool $shouldReplace = true) : void
+    public function add($key, $values = null, bool $shouldReplace = true): self
     {
         $keys = is_array($key) ? $key : [$key => $values];
         
         foreach ($keys as $name => $value) {
             $this->set($name, $value, $shouldReplace);
         }
+        return $this;
     }
 
     public function get(string $name, $default = null, bool $onlyReturnFirst = true)
@@ -36,12 +37,12 @@ class Headers extends Collection
         return parent::has($this->normalizeName($name));
     }
 
-    public function remove(string $name): void
+    public function remove(string $name): self
     {
-        parent::remove($this->normalizeName($name));
+        return parent::remove($this->normalizeName($name));
     }
 
-    public function set(string $name, $values, bool $shouldReplace = true): void
+    public function set(string $name, $values, bool $shouldReplace = true): self
     {
         $name = $this->normalizeName($name);
         $values = (array)$values;
@@ -51,6 +52,7 @@ class Headers extends Collection
         } else {
             parent::set($name, array_merge($this->items[$name], $values));
         }
+        return $this;
     }
 
     protected function normalizeName(string $name) : string

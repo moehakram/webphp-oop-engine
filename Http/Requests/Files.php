@@ -5,7 +5,7 @@ use MA\PHPQUICK\Collection;
 
 class Files extends Collection
 {
-    public function set(string $name, $value): void
+    public function set(string $name, $value): self
     {
         $this->items[$name] = new UploadedFile(
             $value['tmp_name'],
@@ -14,6 +14,7 @@ class Files extends Collection
             $value['type'],
             $value['error']
         );
+        return $this;
     }
 
     public function get(string $name, $default = null): UploadedFile

@@ -21,14 +21,20 @@ class Collection implements CollectionInterface
         return $this->items;
     }
 
+    public function toArray(): array
+    {
+        return $this->items;
+    }
+
     public function get(string $key, $default = null)
     {
         return $this->items[$key] ?? $default;
     }
 
-    public function set(string $key, $value): void
+    public function set(string $key, $value): self
     {
         $this->items[$key] = $value;
+        return $this;
     }
 
     public function exchangeArray(array $array): array
@@ -39,9 +45,10 @@ class Collection implements CollectionInterface
         return $oldValues;
     }
 
-    public function remove(string $key): void
+    public function remove(string $key): self
     {
         unset($this->items[$key]);
+        return $this;
     }
 
     public function has(string $key): bool
@@ -49,9 +56,10 @@ class Collection implements CollectionInterface
         return isset($this->items[$key]);
     }
 
-    public function clear(): void
+    public function clear(): self
     {
         $this->items = [];
+        return $this;
     }
 
     public function count(): int
@@ -84,13 +92,14 @@ class Collection implements CollectionInterface
         $this->remove($offset);
     }
 
-    public function add($key, $value = null): void
+    public function add($key, $value = null): self
     {
         $keys = is_array($key) ? $key : [$key => $value];
         
         foreach ($keys as $k => $v) {
             $this->items[$k] = $v;
         }
+        return $this;
     }
 
     public function getOrSet($key = null, $default = null)

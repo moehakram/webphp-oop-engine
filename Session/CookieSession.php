@@ -8,33 +8,34 @@ use MA\PHPQUICK\Traits\Token;
 class CookieSession extends Collection
 {
     use Token;
-    private string $cookie_name;
+    private string $cookieName;
     private int $expiration;
 
-    public function __construct(string $cookie_name, string $secretToken, int $expiration = 3600)
+    public function __construct(string $cookieName, string $secretToken, int $expiration = 3600)
     {
-        $this->cookie_name = $cookie_name;
+        $this->cookieName = $cookieName;
         self::$secretToken = $secretToken;
         $this->expiration = $expiration;
 
-        // $token = request()->cookies()->get($this->cookie_name);
-        $token = filter_input(INPUT_COOKIE, $this->cookie_name);
+        // $token = request()->cookies()->get($this->cookieName);
+        $token = filter_input(INPUT_COOKIE, $this->cookieName);
         if ($token) {
             $this->verifyToken($token, $this);
         }
     }
 
-    public function clear(): void
+    public function clear(): self
     {
         parent::clear();
-        headers()->deleteCookie($this->cookie_name);
+        headers()->deleteCookie($this->cookieName);
+        return $this;
     }
 
     public function push(): void
     {
         $token = $this->generateToken($this->getAll());
         response()->headers()->setCookie(new Cookie(
-            $this->cookie_name,
+            $this->cookieName,
             $token,
             time() + $this->expiration,
             '/',

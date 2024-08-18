@@ -14,10 +14,11 @@ trait PropertyAccessor
         return $this->$key ?? $default;
     }
 
-    public function set(string $key, $value): void
+    public function set(string $key, $value): self
     {
         if (property_exists($this, $key)) {
             $this->$key = $value;
         }
+        return $this;
     }
 }
