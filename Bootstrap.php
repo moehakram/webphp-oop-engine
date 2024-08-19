@@ -83,7 +83,7 @@ class Bootstrap
      */
     private function initializeDatabase(App $app): void
     {
-        $dbconfig = (array)$app->get('database');
+        $dbconfig = (array)$app->get('config')->get('database');
         $app->singleton('db', fn() => new Database($dbconfig, $dbconfig['username'], $dbconfig['password']));
         $app->singleton(\PDO::class, fn() => Database::getConnection());
         if($this->initializeDatabase){
