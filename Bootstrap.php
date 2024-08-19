@@ -6,8 +6,11 @@ namespace MA\PHPQUICK;
 use Closure;
 use MA\PHPQUICK\MVC\View;
 use MA\PHPQUICK\Database\Database;
+use MA\PHPQUICK\Http\Requests\Request;
 use MA\PHPQUICK\Http\Responses\Response;
 use MA\PHPQUICK\Contracts\ContainerInterface as App;
+use MA\PHPQUICK\Contracts\RequestInterface as IRequest;
+
 
 class Bootstrap
 {
@@ -56,6 +59,10 @@ class Bootstrap
      */
     private function registerCoreInstances(App $app): void
     {
+        $app->instance('request', $request = new Request);
+        $app->instance(Request::class, $request);
+        $app->instance(IRequest::class, $request);
+
         $app->instance('app', $app);
         $app->instance(Container::class, $app);
         $app->instance(Application::class, $app);

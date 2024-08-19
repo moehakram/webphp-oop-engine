@@ -9,17 +9,15 @@ use MA\PHPQUICK\Router\Router;
 use MA\PHPQUICK\Http\Requests\Request;
 use MA\PHPQUICK\Http\Responses\Response;
 use MA\PHPQUICK\Router\MiddlewarePipeline;
-use MA\PHPQUICK\Contracts\RequestInterface as IRequest;
-use MA\PHPQUICK\Contracts\ResponseInterface as IResponse;
 use MA\PHPQUICK\Contracts\HttpExceptionInterface;
 use MA\PHPQUICK\Exceptions\HttpResponseException;
+use MA\PHPQUICK\Contracts\ResponseInterface as IResponse;
 
 class Application extends Container
 {
     public readonly string $basePath;
     public function __construct(
         string $basePath,
-        private readonly Request $request,
         private readonly Router $router,
         private readonly Config $config
     ) {
@@ -28,18 +26,14 @@ class Application extends Container
         
         $this->instance('config', $config);
         $this->instance(Config::class, $config);
-        
-        $this->instance('request', $request);
-        $this->instance(Request::class, $request);
-        $this->instance(IRequest::class, $request);
     }
 
     public function run() : IResponse
     {
         try {
-            $route = $this->router->dispatch($this->request->getMethod(), $this->request->getPath());
+            $route = $this->router->dispatch($this->get(Request::class)->getMethod(), $this->get(Request::class)->getPath());
             $middlewarePipeline = $this->createMiddlewarePipeline($route);
-            return $middlewarePipeline->handle($this->request);
+            return $middlewarePipeline->handle($this->get(Request::class));
         } catch (HttpResponseException $http) {
             return $http->getResponse();
         } catch (HttpExceptionInterface $httpException) {
