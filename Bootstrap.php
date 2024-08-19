@@ -130,7 +130,7 @@ class Bootstrap
     {
         $bindings = $app->get('config')->get('error_pages', []);
         foreach ($bindings as $id => $view) {
-            if($view) $app->bind((string)$id, fn() => View::make(base_path($view)));
+            if($view) $app->bind((string)$id, fn() => View::make($view));
         }
     }
 
