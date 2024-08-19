@@ -23,7 +23,6 @@ class Bootstrap
         private ?Closure $exceptionHandler = null,
         private ?Closure $initializeDomain = null,
         private ?Closure $initializeDatabase = null,
-        private ?Closure $initializeConfig = null,
         private ?Closure $httpExceptionHandler = null,
         private ?Closure $customBoot = null
     ) {}
@@ -38,7 +37,6 @@ class Bootstrap
     {
         $this->setExceptionHandler($app);
         $this->registerCoreInstances($app);
-        $this->initializeConfig($app);
         $this->initializeDatabase($app);
         $this->initializeDomain($app);
         $this->initializeRepositories($app);
@@ -59,27 +57,15 @@ class Bootstrap
      */
     private function registerCoreInstances(App $app): void
     {
+        $app->instance('app', $app);
+        $app->instance(Container::class, $app);
+        $app->instance(Application::class, $app);
+        
         $app->instance('request', $request = new Request);
         $app->instance(Request::class, $request);
         $app->instance(IRequest::class, $request);
 
-        $app->instance('app', $app);
-        $app->instance(Container::class, $app);
-        $app->instance(Application::class, $app);
         $app->singleton(Response::class, fn() => new Response());
-    }
-
-    /**
-     * Initializes the configuration by loading the config file and injecting it into the container.
-     *
-     * @param Container $container
-     * @return void
-     */
-    private function initializeConfig(App $app): void
-    {
-        if($this->initializeConfig) {
-            ($this->initializeConfig)($app->get('config'));
-        }
     }
 
     /**
