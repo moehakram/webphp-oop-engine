@@ -8,7 +8,7 @@ if (!function_exists('log_exception')) {
         $message .= "In file: " . $ex->getFile() . " on line " . $ex->getLine() . "\n";
         $message .= "Stack trace:\n" . $ex->getTraceAsString() . "\n";
         // error_log($message, 3, base_path('logs/error.log'));
-        error_log($message, 3, config('logging.error_log.path'));
+        error_log($message, 3, base_path(config('logging.error_log.path')));
     }
 }
 
@@ -17,6 +17,6 @@ if (!function_exists('write_log')) {
     {
         $timestamp = date('Y-m-d H:i:s');
         $logMessage = "[$timestamp] " . (is_array($message) ? json_encode($message) : $message) . PHP_EOL;
-        file_put_contents(config('logging.info_log.path'), $logMessage, FILE_APPEND);
+        file_put_contents(base_path(config('logging.info_log.path')), $logMessage, FILE_APPEND);
     }
 }
