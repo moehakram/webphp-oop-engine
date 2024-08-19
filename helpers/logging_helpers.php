@@ -1,22 +1,46 @@
 <?php
 
 if (!function_exists('log_exception')) {
-    function log_exception(\Throwable $ex): void
+    function log_exception(\Throwable $ex): string
     {
-        $time = date('Y-m-d H:i:s');
-        $message = "[{$time}] Uncaught exception: " . $ex->getMessage() . "\n";
-        $message .= "In file: " . $ex->getFile() . " on line " . $ex->getLine() . "\n";
-        $message .= "Stack trace:\n" . $ex->getTraceAsString() . "\n";
-        // error_log($message, 3, base_path('logs/error.log'));
-        error_log($message, 3, base_path(config('logging.error_log.path')));
+        $logData = [
+            'time' => date('Y-m-d H:i:s'),
+            'message' => $ex->getMessage(),
+            'file' => $ex->getFile(),
+            'line' => $ex->getLine(),
+            'trace' => $ex->getTraceAsString(),
+        ];
+
+        return sprintf(
+            "[%s] Uncaught exception: %s\nIn file: %s on line %s\nStack trace:\n%s\n",
+            $logData['time'],
+            $logData['message'],
+            $logData['file'],
+            $logData['line'],
+            $logData['trace']
+        );
     }
 }
 
 if (!function_exists('write_log')) {
-    function write_log($message)
+
+        /**
+     * Log a message using the Monolog logger.
+     *
+     * @param string|array $message The log message
+     * @param string $name The name of the logger
+     * @param array $context Context array for the log message
+     * @param int $level The logging level (e.g., Logger::INFO)
+     * @param string $path The file path for the log
+     */
+
+    function write_log($message, $name = 'app', array $context = [], int $level = \Monolog\Level::Info): void
     {
         $timestamp = date('Y-m-d H:i:s');
-        $logMessage = "[$timestamp] " . (is_array($message) ? json_encode($message) : $message) . PHP_EOL;
-        file_put_contents(base_path(config('logging.info_log.path')), $logMessage, FILE_APPEND);
+        $logMessage = "[$timestamp] " . (is_array($message) ? json_encode($message, JSON_PRETTY_PRINT) : $message) . PHP_EOL;
+
+        $logger = new \Monolog\Logger($name);
+        $logger->pushHandler(new \Monolog\Handler\StreamHandler(base_path(config('logging.info_log.path')), $level));
+        $logger->log($level, $logMessage, $context);
     }
 }

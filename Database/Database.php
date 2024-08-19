@@ -43,7 +43,7 @@ class Database
         try {
             return new PDO($dsn, $this->username, $this->password);
         } catch (PDOException $e) {
-            throw new Exception('Koneksi ke basis data gagal: ' . $e->getMessage(), 500);
+            throw new Exception('Failed to connect to the database: ' . $e->getMessage(), 500);
         }
     }
 
