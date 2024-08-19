@@ -16,12 +16,12 @@ if (!function_exists('app')) {
     {
         $app = Container::getInstance();
 
-        // Jika ada key, resolve key tersebut dari container
+        // Jika tidak ada key, kembalikan instance app
         if (is_null($key)) {
             return $app;
         }
 
-        // Jika tidak ada key, kembalikan instance app
+        // Jika ada key, resolve key tersebut dari container
         return $app->get($key);
     }
 }
