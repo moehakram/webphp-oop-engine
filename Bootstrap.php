@@ -49,6 +49,20 @@ class Bootstrap
     }
 
     /**
+     * Registers core instances such as Container, Application, and Response in the container.
+     *
+     * @param Container $container
+     * @return void
+     */
+    private function registerCoreInstances(App $app): void
+    {
+        $app->instance('app', $app);
+        $app->instance(Container::class, $app);
+        $app->instance(Application::class, $app);
+        $app->singleton(Response::class, fn() => new Response());
+    }
+
+    /**
      * Initializes the configuration by loading the config file and injecting it into the container.
      *
      * @param Container $container
@@ -69,6 +83,8 @@ class Bootstrap
      */
     private function initializeDatabase(App $app): void
     {
+        $dbconfig = (array)$app->get('database');
+        $app->singleton('db', fn() => new Database($dbconfig, $dbconfig['username'], $dbconfig['password']));
         $app->singleton(\PDO::class, fn() => Database::getConnection());
         if($this->initializeDatabase){
             ($this->initializeDatabase)($app->get(\PDO::class));
@@ -127,19 +143,6 @@ class Bootstrap
     private function setHttpExceptionHandler(App $app): void
     {
         $app->instance('http.exception.handler', $this->httpExceptionHandler);
-    }
-
-    /**
-     * Registers core instances such as Container, Application, and Response in the container.
-     *
-     * @param Container $container
-     * @return void
-     */
-    private function registerCoreInstances(App $app): void
-    {
-        $app->instance(Container::class, $app);
-        $app->instance(Application::class, $app);
-        $app->instance(Response::class, new Response());
     }
 
     private function initializeSession(App $app): void

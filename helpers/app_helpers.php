@@ -6,18 +6,23 @@ use MA\PHPQUICK\Http\Responses\ResponseHeaders;
 use MA\PHPQUICK\Contracts\RequestInterface as Request;
 
 if (!function_exists('app')) {
-
-    function app($key = null)
+    /**
+     * Get the available container instance.
+     *
+     * @param  string|null  $key
+     * @return \MA\PHPQUICK\Contracts\ContainerInterface|mixed
+     */
+    function app(string $key = null)
     {
-        $app = Container::$instance;
+        $app = Container::getInstance();
 
         // Jika ada key, resolve key tersebut dari container
-        if ($key) {
-            return $app->get($key);
+        if (is_null($key)) {
+            return $app;
         }
 
         // Jika tidak ada key, kembalikan instance app
-        return $app;
+        return $app->get($key);
     }
 }
 
@@ -51,5 +56,22 @@ if (!function_exists('headers')) {
     function headers(): ResponseHeaders
     {
         return response()->headers();
+    }
+}
+
+if (!function_exists('db')) {
+    /**
+     * Get the available Database instance.
+     *
+     * @param  string|null  $query
+     * @param  array|null  $params
+     * @return \MA\PHPQUICK\Database\Database|\PDOStatement|false
+     */
+    function db(string $query = null, ?array $params = null)
+    {
+        if(is_null($query)){
+            return app('db');
+        }
+        return app('db')->query($query, $params);
     }
 }

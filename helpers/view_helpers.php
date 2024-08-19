@@ -5,7 +5,7 @@ use MA\PHPQUICK\MVC\View;
 if (!function_exists('csrf')) {
     function csrf(): string
     {
-        session()->set('token', $token = bin2hex(random_bytes(35)));
+        session()->set('csrf_token', $token = bin2hex(random_bytes(35)));
         return $token;
     }
 }

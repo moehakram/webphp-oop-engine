@@ -10,16 +10,21 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionUnionType;
 use ReflectionFunctionAbstract;
-use MA\PHPQUICK\Contracts\ContainerInterface;
+use MA\PHPQUICK\Contracts\ContainerInterface as IContainer;
 use MA\PHPQUICK\Exceptions\Container\NotFoundException;
 use MA\PHPQUICK\Exceptions\Container\ContainerException;
 
-class Container implements ContainerInterface
+class Container implements IContainer
 {
-    public static ?Container $instance = null;
+    protected static ?IContainer $instance = null;
 
     private array $bindings = [];
     private array $instances = [];
+
+    public static function getInstance()
+    {
+        return static::$instance ??= new static;
+    }
 
     public function bind(string $id, Closure $resolver): void
     {

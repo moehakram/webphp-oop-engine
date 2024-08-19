@@ -89,7 +89,7 @@ class View
 
     private function getViewFilePath(string $view): string
     {
-        $view = trim($view, '/');
+        $view = trim($view, '\/');
         $viewPath = str_replace('.', DIRECTORY_SEPARATOR, "app.views.$view");
         return base_path("$viewPath.php");
     }

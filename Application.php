@@ -16,14 +16,20 @@ use MA\PHPQUICK\Exceptions\HttpResponseException;
 
 class Application extends Container
 {
+    public readonly string $basePath;
     public function __construct(
-        private readonly IRequest $request,
+        string $basePath,
+        private readonly Request $request,
         private readonly Router $router,
         private readonly Config $config
     ) {
         static::$instance = $this;
+        $this->basePath = rtrim($basePath, '\/');
+        
         $this->instance('config', $config);
         $this->instance(Config::class, $config);
+        
+        $this->instance('request', $request);
         $this->instance(Request::class, $request);
         $this->instance(IRequest::class, $request);
     }

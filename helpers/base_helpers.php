@@ -1,8 +1,8 @@
 <?php
 
 if (!function_exists('base_path')) {
-    function base_path($path = ''): string{
-        return BASE_PATH . ($path ? DIRECTORY_SEPARATOR . $path : DIRECTORY_SEPARATOR);
+    function base_path(string $path = ''): string {
+        return app()->basePath . DIRECTORY_SEPARATOR . ltrim($path, '\/');
     }
 }
 
@@ -24,7 +24,7 @@ if (!function_exists('dd')) {
     function dd($data)
     {
         echo '<pre>';
-        print_r($data);
+        var_dump($data);
         echo '</pre>';
         die;
     }
