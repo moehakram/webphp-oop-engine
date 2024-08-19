@@ -65,7 +65,7 @@ if (!function_exists('db')) {
      *
      * @param  string|null  $query
      * @param  array|null  $params
-     * @return \MA\PHPQUICK\Database\Database|\PDO|\PDOStatement|false
+     * @return \PDO|\PDOStatement|false
      */
     function db(string $query = null, ?array $params = null)
     {
